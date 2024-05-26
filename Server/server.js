@@ -2,6 +2,7 @@ const express=require('express');
 const app=express();
 const mongoose=require('mongoose');
 app.use(express.json());
+require('dotenv').config();
 const PORT=3000;
 
 
@@ -18,7 +19,8 @@ const messageSchema=new mongoose.Schema({
 
 const User=mongoose.model("User",userSchema);
 const Message=mongoose.model("message",messageSchema);
-mongoose.connect("mongodb+srv://avi5200786:Ashish123@cluster0.lgwqhsn.mongodb.net/users");
+
+mongoose.connect(process.env.MONGODB_URI)
 
 app.post('/signup',async(req,res)=>{
 const{username,password}=req.body;
