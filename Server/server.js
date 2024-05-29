@@ -1,7 +1,9 @@
 const express=require('express');
 const app=express();
 const mongoose=require('mongoose');
+const cors=require('cors')
 app.use(express.json());
+app.use(cors());
 require('dotenv').config();
 const PORT=3000;
 
@@ -38,7 +40,7 @@ else{
 
 app.post('/login',async(req,res)=>{
     const {username,password}=req.body;
-    const user=User.findOne({username,password});
+    const user=await User.findOne({username,password});
     if(user){
       res.status(200).json({message:"Logged in successfully"});
     }
@@ -53,7 +55,7 @@ app.get('/users',async(req,res)=>{
 })
 
 app.get('/users/:userId',async(req,res)=>{
-  const user=await User.findOne({_id:req.params.userId});
+  let user=await User.findOne({_id:req.params.userId});
   if(user){
     res.json({user});
   }
