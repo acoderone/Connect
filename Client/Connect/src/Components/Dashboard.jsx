@@ -13,24 +13,18 @@ function Dashboard() {
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const token = localStorage.getItem('token');
-        if (!token) {
-          throw new Error("No token found");
-        }
-       console.log(token);
+       
        const response = await axios.get(
         "http://localhost:3000/users",
         {
-          headers: {
-            authorization: token,
-          },
+         withCredentials:true
         }
       );
 
-        /* console.log(response.data.Users);
+        //console.log(response.data.Users);
         const u = response.data.Users || [];
-        setUsers(u); */
-        console.log(response)
+        setUsers(u);
+        //console.log(response)
       } catch (e) {
         console.error("Error fetching users:", e);
       }

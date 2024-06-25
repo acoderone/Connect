@@ -10,8 +10,10 @@ function Login() {
        const response=await axios.post("http://localhost:3000/login",{
         username,
         password
+       },{
+        withCredentials:true
        })
-       console.log(response);
+       
        if(response.status===200){
          navigate('/');
        }
