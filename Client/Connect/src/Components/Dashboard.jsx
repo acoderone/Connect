@@ -21,8 +21,8 @@ function Dashboard() {
         }
       );
 
-        //console.log(response.data.Users);
-        const u = response.data.Users || [];
+        //console.log(response.data.users);
+        const u = response.data.users || [];
         setUsers(u);
         //console.log(response)
       } catch (e) {

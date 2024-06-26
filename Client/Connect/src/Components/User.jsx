@@ -18,8 +18,8 @@ function User() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await axios.get(`http://localhost:5173/users/${userId}`, { withCredentials: true });
-        console.log(response);
+        const response = await axios.get(`http://localhost:3000/users/${userId}`, { withCredentials: true });
+       // console.log(response);
         setUser(response.data.user);
         setUsername(response.data.user.username);
         setRecipient(response.data.user._id); // Set recipient using user's _id
@@ -30,7 +30,7 @@ function User() {
     };
 
     fetchData();
-  }, [userId]);
+  }, [socketio,userId]);
 
 
   useEffect(() => {
