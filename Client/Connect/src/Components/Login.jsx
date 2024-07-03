@@ -15,6 +15,12 @@ function Login() {
        })
        
        if(response.status===200){
+        
+        const token=response.data.token;
+        
+        if(token)
+        
+          localStorage.setItem('token',token);
          navigate('/');
        }
     }

@@ -1,66 +1,73 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { io } from "socket.io-client";
 import axios from "axios";
 import { useParams } from "react-router-dom";
 
+import {jwtDecode} from 'jwt-decode';
+const socket = io("http://localhost:3000", {
+  withCredentials: true,
+});
+//const usernameFromCookie = Cookies.get('user');
 function User() {
   const [user, setUser] = useState(null); // Initialize as null
   const { userId } = useParams(); // Get userId from route parameters
   const [messages, setMessages] = useState([]);
   const [message, setMessage] = useState("");
   const [username, setUsername] = useState("");
-  const [reciepient, setRecipient] = useState("");
-
-  const socketio = io("http://localhost:3000", {
-    withCredentials: true,
-  });
-
+  const [sender,setSender]=useState("");
   useEffect(() => {
+    // Read username from cookies
+    socket.connect();
+    const token = localStorage.getItem('token'); // Adjust this based on how you store your token
+    //console.log(token);
+    if (token) {
+      const decodedToken = jwtDecode(token);
+      setSender(decodedToken.username);
+    }
+    //console.log(usernameFromCookie);
+
     const fetchData = async () => {
       try {
         const response = await axios.get(`http://localhost:3000/users/${userId}`, { withCredentials: true });
-       // console.log(response);
         setUser(response.data.user);
         setUsername(response.data.user.username);
-        setRecipient(response.data.user._id); // Set recipient using user's _id
-        socketio.emit("register", response.data.user.username);
+        socket.emit("register", response.data.user._id);
+        setMessages(response.data.user.messages);
       } catch (error) {
         console.error("Error fetching user data:", error);
       }
     };
 
     fetchData();
-  }, [socketio,userId]);
 
-
-  useEffect(() => {
-    socketio.on("message", (newMessage) => {
-      setMessages((prevMessage) => [...prevMessage, newMessage]);
+    // Listen for incoming messages
+    socket.on("message", (newMessage) => {
+      setMessages((prevMessages) => [...prevMessages, newMessage]);
     });
 
-   
-  }, []);
+    // Cleanup on unmount
+    return () => {
+      socket.off("message");
+      socket.disconnect();
+    };
+  }, [userId]);
 
-  useEffect(()=>{
-    setRecipient(userId)
-  },[userId])
-  const SendMessage=()=>{
-    if(message && reciepient){
-      socketio.emit('message',{
-        from:username,
-        to:reciepient,
-        message:message
-      })
+  const sendMessage = () => {
+    if (message && username) {
+      socket.emit('message', {
+        from: sender,
+        to: username,
+        message: message
+      });
       setMessage('');
     }
-  }
+  };
+
   return (
     <div>
       {user ? (
         <div>
-          <h1>{user.username}</h1>
-
-          {/* Add more user details as needed */}
+          <h1>{username}</h1>
         </div>
       ) : (
         <p>Loading user data...</p>
@@ -71,13 +78,12 @@ function User() {
         value={message}
         onChange={(e) => setMessage(e.target.value)}
       />
-      <button onClick={SendMessage}>Send</button>
+      <button onClick={sendMessage}>Send</button>
       <div>
-        <h2>
-          {messages.map((msg, index) => {
-            <div key={index}>{msg.message}</div>;
-          })}
-        </h2>
+        <h2>Messages</h2>
+        {messages.map((msg, index) => (
+          <div key={index}>{msg.message}</div>
+        ))}
       </div>
     </div>
   );

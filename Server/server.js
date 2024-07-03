@@ -5,10 +5,11 @@ const cors = require("cors");
 const http = require("http");
 const socketIo = require("socket.io");
 const cookieParser = require("cookie-parser");
+const jwt=require("jsonwebtoken");
 const PORT = 3000;
 const server = http.createServer(app);
 
-const secretKey = process.env.SECRET_KEY;
+const secretKey = "Se3c4r4e4tk4e0y";
 require("dotenv").config();
 app.use(express.json());
 app.use(
@@ -52,6 +53,7 @@ mongoose
   .catch((error) => {
     console.error("Database connection error:", error);
   });
+
 io.on("connection", (socket) => {
   console.log("A user connected: " + socket.id);
   socket.on("register", async (username) => {
@@ -70,10 +72,16 @@ io.on("connection", (socket) => {
     try {
       const newMessage = new Message({ from, to, message });
       await newMessage.save();
-
+    
       const recipient = await User.findOne({ username: to });
+      const user=await User.findOne({username:from});
+      console.log(user);
+      user.messages.push(newMessage);
+      
+      await user.save();
       if (recipient && recipient.socketId) {
         io.to(recipient.socketId).emit("message", newMessage);
+
       }
     } catch (error) {
       console.error("Error sending message:", error);
@@ -85,17 +93,16 @@ io.on("connection", (socket) => {
   });
 });
 
-
-
 const auth = (req, res, next) => {
-  const username = req.cookies.user;
-  if (username) {
-    req.user = username;
+  const token = req.cookies.token;
+  if (token) {
+    req.user = token;
     next();
   } else {
     return res.sendStatus(401); // Forbidden
   }
 };
+
 
 app.post("/signup", async (req, res) => {
   const { username, password } = req.body;
@@ -120,8 +127,9 @@ app.post("/login", async (req, res) => {
   try {
     const user = await User.findOne({ username, password });
     if (user) {
-      res.cookie("user", username, { httpOnly: true, maxAge: 86400000 });
-      res.status(200).json({ message: "Logged in successfully" });
+      const token = jwt.sign({ username }, secretKey, { expiresIn: '1h' });
+      res.cookie("token", token, { httpOnly: true, maxAge: 86400000 });
+      res.status(200).json({ message: "Logged in successfully",token });
     } else {
       res.status(404).json({ message: "Wrong credentials" });
     }
