@@ -33,6 +33,7 @@ function User() {
         setUsername(response.data.user.username);
         socket.emit("register", response.data.user._id);
         setMessages(response.data.user.messages);
+        console.log(messages);
       } catch (error) {
         console.error("Error fetching user data:", error);
       }

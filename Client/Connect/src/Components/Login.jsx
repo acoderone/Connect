@@ -18,9 +18,11 @@ function Login() {
         
         const token=response.data.token;
         
-        if(token)
-        
+        if(token){
           localStorage.setItem('token',token);
+        }
+        
+          
          navigate('/');
        }
     }
