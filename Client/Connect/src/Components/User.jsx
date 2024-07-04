@@ -29,6 +29,7 @@ function User() {
     const fetchData = async () => {
       try {
         const response = await axios.get(`http://localhost:3000/users/${userId}`, { withCredentials: true });
+        
         setUser(response.data.user);
         setUsername(response.data.user.username);
         socket.emit("register", response.data.user._id);
@@ -53,6 +54,14 @@ function User() {
     };
   }, [userId]);
 
+  useEffect(()=>{
+    const fetchData=async()=>{
+      const response2=await axios.get(`http://localhost:3000/messages/${userId}`,{withCredentials:true});
+    console.log(response2);
+    setMessages(response2.data.messages)
+    }
+   fetchData();
+  },[])
   const sendMessage = () => {
     if (message && username) {
       socket.emit('message', {

@@ -6,6 +6,7 @@ const http = require("http");
 const socketIo = require("socket.io");
 const cookieParser = require("cookie-parser");
 const jwt=require("jsonwebtoken");
+const { timeStamp } = require("console");
 const PORT = 3000;
 const server = http.createServer(app);
 
@@ -77,8 +78,9 @@ io.on("connection", (socket) => {
       const user=await User.findOne({username:from});
       console.log(user);
       user.messages.push(newMessage);
-      
+      recipient.messages.push(newMessage);
       await user.save();
+      await recipient.save();
       if (recipient && recipient.socketId) {
         io.to(recipient.socketId).emit("message", newMessage);
 
@@ -96,12 +98,19 @@ io.on("connection", (socket) => {
 const auth = (req, res, next) => {
   const token = req.cookies.token;
   if (token) {
-    req.user = token;
-    next();
+    jwt.verify(token, secretKey, (err, decoded) => {
+      if (err) {
+        return res.sendStatus(403); // Forbidden
+      } else {
+        req.user = decoded; // Attach the decoded token payload to the req object
+        next();
+      }
+    });
   } else {
-    return res.sendStatus(401); // Forbidden
+    return res.sendStatus(401); // Unauthorized
   }
 };
+
 
 
 app.post("/signup", async (req, res) => {
@@ -164,3 +173,30 @@ app.get("/users/:userId", auth, async (req, res) => {
     res.status(500).json({ message: "Internal Server Error" });
   }
 });
+
+app.get("/messages/:userId",auth,async(req,res)=>{
+  try{
+    const user=await User.findOne({_id:req.params.userId});
+    //console.log("USer is",user);
+    const messages=await Message.find({  $or: [
+      {
+        $and: [
+          { to: user.username },
+          { from: req.user.username }
+        ]
+      },
+      {
+        $and: [
+          { to: req.user.username },
+          { from: user.username }
+        ]
+      }
+    ]}).sort({timeStamp:1});
+    console.log(req.user.username);
+    res.send({messages});
+  }
+  catch(error){
+    console.error("Error fetching user:",error);
+    res.status(500).json({message:"Internal Server Error"});
+  }
+})
