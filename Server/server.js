@@ -75,16 +75,17 @@ io.on("connection", (socket) => {
   socket.on("message", async (messageData) => {
     try {
       let receiver = users[messageData.to];
-      console.log("receiver", users[messageData.to], users);
-      if (receiver) {
+      let sender=users[messageData.from];
+      console.log("receiver", receiver, users);
+      if (receiver && sender) {
         io.to(receiver).emit("msg", messageData);
-      }
+      
 
       const newMessage = new Message(messageData);
       await newMessage.save();
 
-      const senderUser = await User.findOne({ username: messageData.from });
-      const recipientUser = await User.findOne({ username: messageData.to });
+      const senderUser = await User.findOne({ username: sender });
+      const recipientUser = await User.findOne({ username: reciever });
 
       if (senderUser && recipientUser) {
         senderUser.messages.push(newMessage);
@@ -92,7 +93,7 @@ io.on("connection", (socket) => {
         await senderUser.save();
         await recipientUser.save();
       }
-
+    }
       socket.on('disconnect', () => {
         console.log('A user disconnected: ' + socket.id);
         for (const [username, socketId] of Object.entries(users)) {

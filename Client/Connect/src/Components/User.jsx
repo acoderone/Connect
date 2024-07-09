@@ -16,9 +16,12 @@ function User() {
   const [username, setUsername] = useState("");
   const [sender, setSender] = useState("");
 
+  useEffect(()=>{
+    socket.emit("register", sender);
+  },[sender])
   useEffect(() => {
     socket.connect();
-
+     
     const token = localStorage.getItem("token");
     if (token) {
       const decodedToken = jwtDecode(token);
@@ -37,14 +40,22 @@ function User() {
         setUser(response.data.user);
         setUsername(response.data.user.username);
         
-        await socket.emit("register", sender);
-        setMessages(response.data.user.messages);
+       
+        //setMessages(response.data.user.messages);
       } catch (error) {
         console.error("Error fetching user data:", error);
       }
     };
-
+    const fetchMessages = async () => {
+      const response2 = await axios.get(
+        `http://localhost:3000/messages/${userId}`,
+        { withCredentials: true }
+      );
+      console.log(response2);
+      setMessages(response2.data.messages);
+    };
     fetchData();
+    fetchMessages();
 
     socket.on("msg", (messageData) => {
       console.log("New message received:", messageData);
@@ -56,17 +67,8 @@ function User() {
     };
   }, [userId]);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      const response2 = await axios.get(
-        `http://localhost:3000/messages/${userId}`,
-        { withCredentials: true }
-      );
-      console.log(response2);
-      setMessages(response2.data.messages);
-    };
-    fetchData();
-  }, [userId]);
+ 
+  
 
   const sendMessage = () => {
     if (message && username) {
