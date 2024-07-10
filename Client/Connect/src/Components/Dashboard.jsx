@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { jwtDecode } from "jwt-decode";
 
 function Dashboard() {
   const navigate = useNavigate();
@@ -20,10 +21,12 @@ function Dashboard() {
          withCredentials:true
         }
       );
-
+         const token=localStorage.getItem('token');
+         const decodedToken=jwtDecode(token);
         //console.log(response.data.users);
         const u = response.data.users || [];
-        setUsers(u);
+        const ls=u.filter((u)=>u.username!=decodedToken.username);
+        setUsers(ls);
         //console.log(response)
       } catch (e) {
         console.error("Error fetching users:", e);

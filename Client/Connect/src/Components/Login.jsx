@@ -29,8 +29,8 @@ function Login() {
   return (
     <div>
     <h1>Login</h1>
-      <input onChange={(e)=>setUsername(e.target.value)} />
-      <input onChange={(e)=>setPassword(e.target.value)}/>
+      <input placeholder='username' onChange={(e)=>setUsername(e.target.value)} />
+      <input placeholder='password' type='password' onChange={(e)=>setPassword(e.target.value)}/>
       <button onClick={Signin}>Signin</button>
     </div>
   )

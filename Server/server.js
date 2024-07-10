@@ -8,9 +8,11 @@ const cookieParser = require("cookie-parser");
 const jwt = require("jsonwebtoken");
 const { timeStamp } = require("console");
 const PORT = 3000;
+const bcrypt=require('bcrypt');
 const server = http.createServer(app);
 const users = {};
 const secretKey = "Se3c4r4e4tk4e0y";
+const saltRounds=10;
 require("dotenv").config();
 app.use(express.json());
 app.use(
@@ -30,7 +32,9 @@ const io = socketIo(server, {
 
 const userSchema = new mongoose.Schema({
   username: String,
-  password: String,
+  hashedPassword: String,
+  email:String,
+  name:String,
   messages: [{ type: mongoose.Schema.Types.ObjectId, ref: "Message" }],
 });
 
@@ -130,13 +134,14 @@ const auth = (req, res, next) => {
 };
 
 app.post("/signup", async (req, res) => {
-  const { username, password } = req.body;
+  const { username, password,email,name } = req.body;
   try {
     const user = await User.findOne({ username });
     if (user) {
       res.status(403).json({ message: "Username already present" });
     } else {
-      const newUser = new User({ username, password });
+      const hashedPassword = await bcrypt.hash(password, saltRounds);
+      const newUser = new User({ username, hashedPassword,email,name });
       await newUser.save();
       res.cookie("user", username, { httpOnly: true, maxAge: 86400000 });
       res.json({ message: "User Created successfully" });
@@ -150,8 +155,10 @@ app.post("/signup", async (req, res) => {
 app.post("/login", async (req, res) => {
   const { username, password } = req.body;
   try {
-    const user = await User.findOne({ username, password });
-    if (user) {
+    const user=await User.findOne({username:username});
+    const match = await bcrypt.compare(password, user.hashedPassword);
+    if (match) {
+      
       const token = jwt.sign({ username }, secretKey, { expiresIn: "1h" });
       res.cookie("token", token, { httpOnly: true, maxAge: 86400000 });
       res.status(200).json({ message: "Logged in successfully", token });
