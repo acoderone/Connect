@@ -9,7 +9,7 @@ function Signup() {
     let[name,setName]=useState('');
     const Signup=async(e)=>{
         e.preventDefault();
-       const response=await axios.post("http://localhost:3000/signup",{
+       const response=await axios.post("http://localhost:3000/auth/signup",{
         username,
         password,
         email,

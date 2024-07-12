@@ -5,15 +5,18 @@ const cors = require("cors");
 const http = require("http");
 const socketIo = require("socket.io");
 const cookieParser = require("cookie-parser");
-const jwt = require("jsonwebtoken");
 const { timeStamp } = require("console");
 const PORT = 3000;
-const bcrypt=require('bcrypt');
 const server = http.createServer(app);
 const users = {};
-const secretKey = "Se3c4r4e4tk4e0y";
-const saltRounds=10;
+const User=require("./models/user");
+const Message=require("./models/message");
 require("dotenv").config();
+
+const authRoutes = require("./routes/authRoutes");
+const userRoutes = require("./routes/userRoutes");
+const messageRoutes = require("./routes/messageRoutes");
+
 app.use(express.json());
 app.use(
   cors({
@@ -29,24 +32,6 @@ const io = socketIo(server, {
     credentials: true,
   },
 });
-
-const userSchema = new mongoose.Schema({
-  username: String,
-  hashedPassword: String,
-  email:String,
-  name:String,
-  messages: [{ type: mongoose.Schema.Types.ObjectId, ref: "Message" }],
-});
-
-const messageSchema = new mongoose.Schema({
-  from: String,
-  to: String,
-  message: String,
-  timeStamp: { type: Date, default: Date.now() },
-});
-
-const User = mongoose.model("User", userSchema);
-const Message = mongoose.model("Message", messageSchema);
 
 mongoose
   .connect(process.env.MONGODB_URI)
@@ -79,25 +64,24 @@ io.on("connection", (socket) => {
   socket.on("message", async (messageData) => {
     try {
       let receiver = users[messageData.to];
-      let sender=users[messageData.from];
+      let sender = users[messageData.from];
       console.log("receiver", receiver, users);
       if (receiver && sender) {
         io.to(receiver).emit("msg", messageData);
-      
 
-      const newMessage = new Message(messageData);
-      await newMessage.save();
+        const newMessage = new Message(messageData);
+        await newMessage.save();
 
-      const senderUser = await User.findOne({ username: sender });
-      const recipientUser = await User.findOne({ username: reciever });
+        const senderUser = await User.findOne({ username: messageData.from });
+        const recipientUser = await User.findOne({ username: messageData.to });
 
-      if (senderUser && recipientUser) {
-        senderUser.messages.push(newMessage);
-        recipientUser.messages.push(newMessage);
-        await senderUser.save();
-        await recipientUser.save();
+        if (senderUser && recipientUser) {
+          senderUser.messages.push(newMessage);
+          recipientUser.messages.push(newMessage);
+          await senderUser.save();
+          await recipientUser.save();
+        }
       }
-    }
       socket.on('disconnect', () => {
         console.log('A user disconnected: ' + socket.id);
         for (const [username, socketId] of Object.entries(users)) {
@@ -117,104 +101,6 @@ io.on("connection", (socket) => {
   });
 });
 
-const auth = (req, res, next) => {
-  const token = req.cookies.token;
-  if (token) {
-    jwt.verify(token, secretKey, (err, decoded) => {
-      if (err) {
-        return res.sendStatus(403); // Forbidden
-      } else {
-        req.user = decoded; // Attach the decoded token payload to the req object
-        next();
-      }
-    });
-  } else {
-    return res.sendStatus(401); // Unauthorized
-  }
-};
-
-app.post("/signup", async (req, res) => {
-  const { username, password,email,name } = req.body;
-  try {
-    const user = await User.findOne({ username });
-    if (user) {
-      res.status(403).json({ message: "Username already present" });
-    } else {
-      const hashedPassword = await bcrypt.hash(password, saltRounds);
-      const newUser = new User({ username, hashedPassword,email,name });
-      await newUser.save();
-      res.cookie("user", username, { httpOnly: true, maxAge: 86400000 });
-      res.json({ message: "User Created successfully" });
-    }
-  } catch (error) {
-    console.error("Error signing up:", error);
-    res.status(500).json({ message: "Internal Server Error" });
-  }
-});
-
-app.post("/login", async (req, res) => {
-  const { username, password } = req.body;
-  try {
-    const user=await User.findOne({username:username});
-    const match = await bcrypt.compare(password, user.hashedPassword);
-    if (match) {
-      
-      const token = jwt.sign({ username }, secretKey, { expiresIn: "1h" });
-      res.cookie("token", token, { httpOnly: true, maxAge: 86400000 });
-      res.status(200).json({ message: "Logged in successfully", token });
-    } else {
-      res.status(404).json({ message: "Wrong credentials" });
-    }
-  } catch (error) {
-    console.error("Error logging in:", error);
-    res.status(500).json({ message: "Internal Server Error" });
-  }
-});
-
-app.get("/users", auth, async (req, res) => {
-  try {
-    const users = await User.find({});
-    //console.log(users);
-    res.json({ users });
-  } catch (error) {
-    console.error("Error fetching users:", error);
-    res.status(500).json({ message: "Internal Server Error" });
-  }
-});
-
-app.get("/users/:userId", auth, async (req, res) => {
-  try {
-    const user = await User.findOne({ _id: req.params.userId });
-    //console.log(user);
-    if (user) {
-      res.json({ user });
-    } else {
-      res.status(404).json({ message: "User not found" });
-    }
-  } catch (error) {
-    console.error("Error fetching user:", error);
-    res.status(500).json({ message: "Internal Server Error" });
-  }
-});
-
-app.get("/messages/:userId", auth, async (req, res) => {
-  try {
-    const user = await User.findOne({ _id: req.params.userId });
-    //console.log("USer is",user);
-    const messages = await Message.find({
-      $or: [
-        {
-          $and: [{ to: user.username }, { from: req.user.username }],
-        },
-        {
-          $and: [{ to: req.user.username }, { from: user.username }],
-        },
-      ],
-    }).sort({ timeStamp: 1 });
-    console.log(req.user.username);
-    res.send({ messages });
-  } catch (error) {
-    console.error("Error fetching user:", error);
-    res.status(500).json({ message: "Internal Server Error" });
-  }
-});
+app.use("/auth", authRoutes);
+app.use("/users", userRoutes);
+app.use("/messages", messageRoutes);

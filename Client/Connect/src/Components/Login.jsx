@@ -7,7 +7,7 @@ function Login() {
     let[password,setPassword]=useState('');
     const Signin=async(e)=>{
         e.preventDefault();
-       const response=await axios.post("http://localhost:3000/login",{
+       const response=await axios.post("http://localhost:3000/auth/login",{
         username,
         password
        },{
