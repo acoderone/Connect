@@ -22,12 +22,20 @@ function Dashboard() {
         }
       );
          const token=localStorage.getItem('token');
-         const decodedToken=jwtDecode(token);
-        //console.log(response.data.users);
-        const u = response.data.users || [];
-        const ls=u.filter((u)=>u.username!=decodedToken.username);
-        setUsers(ls);
-        //console.log(response)
+         if(token){
+          const decodedToken=jwtDecode(token);
+          if(decodedToken){
+            const u = response.data.users || [];
+            const ls=u.filter((u)=>u.username!=decodedToken.username);
+            setUsers(ls);
+          }
+          else{
+            console.error("Please Sign in")
+          }
+         
+         }
+         
+        
       } catch (e) {
         console.error("Error fetching users:", e);
       }

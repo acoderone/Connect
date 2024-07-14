@@ -1,10 +1,13 @@
 import axios from "axios";
-import { useState } from "react";
+import { useState,useContext } from "react";
 import { useNavigate } from "react-router-dom";
+import authContext from "../Context/AuthContext";
 function Login() {
   const navigate = useNavigate();
+  const {setAuthenticated} = useContext(authContext)
   let [username, setUsername] = useState("");
   let [password, setPassword] = useState("");
+ 
   const Signin = async (e) => {
     e.preventDefault();
     const response = await axios.post(
@@ -19,8 +22,11 @@ function Login() {
     );
 
     if (response.status === 200) {
+      setAuthenticated(true);
+      console.log()
+      //history.push('/');
       const token = response.data.token;
-
+      //isLogin(token);
       if (token) {
         localStorage.setItem("token", token);
       }

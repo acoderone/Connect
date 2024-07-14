@@ -31,12 +31,28 @@ exports.login = async (req, res) => {
     if (match) {
       const token = jwt.sign({ username }, secretKey, { expiresIn: "1h" });
       res.cookie("token", token, { httpOnly: true, maxAge: 86400000 });
-      res.status(200).json({ message: "Logged in successfully", token });
+      res.status(200).json({ message: "Logged in successfully", token,authenticated:true });
     } else {
       res.status(404).json({ message: "Wrong credentials" });
     }
   } catch (error) {
     console.error("Error logging in:", error);
-    res.status(500).json({ message: "Internal Server Error" });
+    res.status(500).json({ message: "Internal Server Error",authenticated:false });
   }
 };
+
+exports.checkAuth=async(req,res)=>{
+  const token = req.cookies.token;
+  
+  if (token) {
+    jwt.verify(token, SECRET_KEY, (err, user) => {
+      if (err) {
+        return res.sendStatus(403);
+      }
+      
+      res.json({ authenticated: true, user });
+    });
+  } else {
+    res.json({ authenticated: false });
+  }
+}

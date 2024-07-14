@@ -6,20 +6,37 @@ import User from './Components/User'
 import Signup from './Components/Signup'
 import HomePage from './Components/HomePage'
 import Navbar from './Components/Navbar'
+import { useEffect, useState } from 'react'
+import authContext from './Context/AuthContext'
+import axios from 'axios'
 function App() {
+  const [isAuthenticated,setAuthenticated]=useState(false);
+   
 
+  useEffect(() => {
+    // Check if the user is authenticated
+    const checkAuth = async () => {
+     const token=localStorage.getItem('token');
+     setAuthenticated(token);
+    };
+
+    checkAuth();
+  }, []);
 
   return (
-    <div className=' flex flex-col h-full  '>
+    <authContext.Provider value={{isAuthenticated,setAuthenticated}}>
+      <div className=' flex flex-col h-full  '>
     <Navbar />
      <Routes>
-      <Route className='h-screen' path='/login' Component={Login}/>
-      <Route path='/signup' Component={Signup}/>
-      <Route path='/dashboard' Component={Dashboard}/>
-      <Route path='/:userId' Component={User}/>
-      <Route path='/' Component={HomePage}/>
+      <Route className='h-screen' path='/login' element={<Login />}/>
+      <Route path='/signup' element={<Signup />}/>
+      <Route path='/dashboard' element={<Dashboard />}/>
+      <Route path='/:userId' element={<User />}/>
+      <Route path='/' element={<HomePage />}/>
      </Routes>  
     </div>
+    </authContext.Provider>
+    
   )
 }
 
