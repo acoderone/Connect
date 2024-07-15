@@ -1,5 +1,6 @@
 const User = require("../models/user");
 const Message = require("../models/message");
+const room=require("../models/room");
 
 exports.getMessages = async (req, res) => {
   try {
@@ -20,3 +21,22 @@ exports.getMessages = async (req, res) => {
     res.status(500).json({ message: "Internal Server Error" });
   }
 };
+
+exports.createRoom=async(req,res)=>{
+  const{roomId,password,newPassword}=req.body;
+  const getRoomId=await room.findOne({roomId:roomId});
+  if(getRoomId){
+    console.error("Id not available");
+  }
+  else{
+    if(password===newPassword){
+      const room=new room({roomId,password});
+      res.status(200).send("Room created succesfully");
+    }
+    else{
+      res.status(400).send("Password not matching");
+    }
+  
+  }
+  
+}

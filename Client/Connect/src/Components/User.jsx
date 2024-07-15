@@ -1,7 +1,7 @@
 import  { useEffect, useState } from "react";
 import { io } from "socket.io-client";
 import axios from "axios";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import {jwtDecode} from "jwt-decode";
 
 const socket = io("http://localhost:3000", {
@@ -11,6 +11,7 @@ const socket = io("http://localhost:3000", {
 });
 
 function User() {
+  const navigate=useNavigate();
   const [user, setUser] = useState(null);
   const { userId } = useParams();
   const [messages, setMessages] = useState([]);
@@ -22,7 +23,12 @@ function User() {
     socket.connect(); // Connect the socket
 
     const token = localStorage.getItem("token");
-    if (token) {
+    if(!token){
+      navigate('/login');
+      return;
+    }
+
+    else if (token) {
       const decodedToken = jwtDecode(token);
       setSender(decodedToken.username);
     }

@@ -56,3 +56,12 @@ exports.checkAuth=async(req,res)=>{
     res.json({ authenticated: false });
   }
 }
+
+exports.logout=async(req,res)=>{
+  const token=req.cookies.token;
+  console.log(token);
+  if(token){
+    await res.clearCookie('token');
+    res.status(200).json("Logout successfully");
+  }
+}

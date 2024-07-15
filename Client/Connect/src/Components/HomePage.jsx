@@ -4,7 +4,7 @@ function HomePage() {
   return (
     <div>
       Chat APP
-      <a href='/dashboard'>dashboard</a>
+      <a href='/dashboard'>Chat App</a>
     </div>
   )
 }

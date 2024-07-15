@@ -13,36 +13,36 @@ function Dashboard() {
 
   useEffect(() => {
     const fetchUsers = async () => {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        navigate('/login');
+        console.error("Please Sign in");
+        return;
+      }
+
       try {
-       
-       const response = await axios.get(
-        "http://localhost:3000/users",
-        {
-         withCredentials:true
+        const decodedToken = jwtDecode(token);
+        if (!decodedToken) {
+          navigate('/login');
+          console.error("Invalid token, please Sign in");
+          return;
         }
-      );
-         const token=localStorage.getItem('token');
-         if(token){
-          const decodedToken=jwtDecode(token);
-          if(decodedToken){
-            const u = response.data.users || [];
-            const ls=u.filter((u)=>u.username!=decodedToken.username);
-            setUsers(ls);
-          }
-          else{
-            console.error("Please Sign in")
-          }
-         
-         }
-         
-        
+
+        const response = await axios.get("http://localhost:3000/users", {
+          withCredentials: true
+        });
+
+        const usersList = response.data.users || [];
+        const filteredUsers = usersList.filter((u) => u.username !== decodedToken.username);
+        setUsers(filteredUsers);
       } catch (e) {
         console.error("Error fetching users:", e);
+        navigate('/login');
       }
     };
 
     fetchUsers();
-  }, []);
+  }, [navigate]);
 
   return (
     <div>
