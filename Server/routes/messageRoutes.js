@@ -4,5 +4,7 @@ const messageController = require("../Controller/messageController");
 const auth = require("../middlewares/auth");
 
 router.get("/:userId", auth, messageController.getMessages);
-router.post("/room",auth,)
+router.post("/room",auth,messageController.createRoom)
+router.get("/room/:roomId",auth,messageController.getRoom);
+router.get("/roomMessages/:roomId",auth,messageController.getRoomMessages);
 module.exports = router;

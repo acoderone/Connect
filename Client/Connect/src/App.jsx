@@ -8,7 +8,9 @@ import HomePage from './Components/HomePage'
 import Navbar from './Components/Navbar'
 import { useEffect, useState } from 'react'
 import authContext from './Context/AuthContext'
-import axios from 'axios'
+import Room from "./Components/Room"
+import Room_messaging from "./Components/Room_messaging"
+import Enter_Room from './Components/Enter_Room'
 function App() {
   const [isAuthenticated,setAuthenticated]=useState(false);
    
@@ -33,6 +35,9 @@ function App() {
       <Route path='/dashboard' element={<Dashboard />}/>
       <Route path='/:userId' element={<User />}/>
       <Route path='/' element={<HomePage />}/>
+      <Route path='/room' element={<Room />}/>
+      <Route path='/room/:roomId' element={<Room_messaging />}/>
+      <Route path='/enterRoom' element={<Enter_Room />}/>
      </Routes>  
     </div>
     </authContext.Provider>

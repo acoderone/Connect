@@ -1,10 +1,22 @@
 const User = require("../models/user");
 const Message = require("../models/message");
 const room=require("../models/room");
-
+const room_message=require("../models/room_message");
+const mongoose = require("mongoose");
 exports.getMessages = async (req, res) => {
   try {
-    const user = await User.findOne({ _id: req.params.userId });
+    const userId = req.params.userId;
+
+    // Validate userId
+    if (!mongoose.Types.ObjectId.isValid(userId)) {
+      return res.status(400).json({ message: "Invalid user ID" });
+    }
+
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
     const messages = await Message.find({
       $or: [
         {
@@ -23,20 +35,50 @@ exports.getMessages = async (req, res) => {
 };
 
 exports.createRoom=async(req,res)=>{
-  const{roomId,password,newPassword}=req.body;
+  const{roomId}=req.body;
   const getRoomId=await room.findOne({roomId:roomId});
   if(getRoomId){
     console.error("Id not available");
   }
   else{
-    if(password===newPassword){
-      const room=new room({roomId,password});
-      res.status(200).send("Room created succesfully");
-    }
-    else{
-      res.status(400).send("Password not matching");
-    }
+   try{
+    const Room=new room({roomId});
+    await Room.save();
+    res.status(200).send("Room created succesfully");
+   }
+   catch(e){
+    console.error(e);
+   }
+     
+    
   
   }
   
+}
+
+exports.getRoom=async(req,res)=>{
+  const roomId=req.params.roomId;
+  const room=room.findById(roomId);
+  if(room){
+    console.log("room available");
+  }
+  else{
+    console.error("room not available");
+  }
+}
+
+exports.getRoomMessages=async(req,res)=>{
+  const roomId=req.params.roomId;
+  console.log(roomId)
+ const messages=await room_message.find({
+  roomId
+ })
+ if(messages){
+  //console.log(messages);
+  res.json(messages);
+ }
+else{
+  res.json("Inbox empty")
+}
+ 
 }

@@ -11,11 +11,14 @@ const server = http.createServer(app);
 const users = {};
 const User=require("./models/user");
 const Message=require("./models/message");
+const Room_message=require("./models/room_message");
+const Room=require("./models/room");
 require("dotenv").config();
 
 const authRoutes = require("./routes/authRoutes");
 const userRoutes = require("./routes/userRoutes");
-const messageRoutes = require("./routes/messageRoutes");
+const messageRoutes = require("./routes/messageRoutes"); 
+//const room = require("./models/room");
 
 app.use(express.json());
 app.use(
@@ -95,7 +98,28 @@ io.on("connection", (socket) => {
       console.error("Error sending message:", error);
     }
   });
+  
+  socket.on('join room',(room)=>{
+    socket.join(room);
+    console.log(`User has joined the room ${room}`);
+  })
 
+  socket.on('room_message', async ( messageData) => {
+    try {
+     const selected_room=await Room.findOne({roomId:messageData.roomId});
+     if(selected_room){
+      console.log(selected_room);
+      const current_message=new Room_message({roomId:messageData.roomId,message:messageData.message});
+      await current_message.save();
+      console.log(current_message);
+      selected_room.messages.push(current_message);
+     }
+       
+    } catch (error) {
+      console.error("Error handling room message:", error);
+    }
+  });
+  
   socket.on("disconnect", () => {
     console.log("A user disconnected", socket.id);
   });
