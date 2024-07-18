@@ -33,18 +33,24 @@ function Room() {
     fetchRoomMessages();
 
     // Listen for incoming messages
-    socket.on('room_message', (messageData) => {
+    socket.on('recieve_message', (messageData) => {
       console.log("New message received:", messageData);
         setMessages((prevMessages) => [...prevMessages, messageData]);
       
     });
 
     return () => {
-      socket.off("room_message");
+      socket.off("recieve_message");
       socket.disconnect();  // Clean up the socket connection
     };
   }, [roomId]);
 
+  const handleLeaveRoom=()=>
+  {
+if(roomId!=''){
+  socket.emit('leave_room',roomId);
+}
+  }
   const sendMessage = () => {
    
       const messageData = {
@@ -52,7 +58,7 @@ function Room() {
         message: message
       };
       socket.emit('room_message', messageData);
-      setMessages((prevMessages) => [...prevMessages, messageData]);
+     
       setMessage(''); // Clear the input field
     
    
@@ -66,6 +72,7 @@ function Room() {
         onChange={(e) => setMessage(e.target.value)}
       />
       <button onClick={sendMessage}>Send</button>
+      <button onClick={handleLeaveRoom}>Leave Room</button>
       <div>
         <h1>Messages</h1>
         {messages.map((msg, index) => (
