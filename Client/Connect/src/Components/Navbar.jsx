@@ -19,6 +19,7 @@ const handleSignout=async()=>{
         <div className="flex justify-between items-center">
           <div className="text-2xl  font-bold text-blue-600 right-3/4">Connect</div>
           <div className=" left-3/4 space-x-4 text-blue-600  font-medium">
+          <Link to="/enterroom">Room</Link>
           { (!isAuthenticated)?<Link to="/signup">Sign up</Link>:<></>
             
             }
