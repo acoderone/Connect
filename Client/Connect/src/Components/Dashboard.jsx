@@ -44,7 +44,7 @@ function Dashboard() {
     };
 
     fetchUsers();
-  }, [navigate]);
+  }, [navigate,selectedUser]);
 
   return (
     <div className="flex flex-row">

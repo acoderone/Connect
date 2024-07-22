@@ -44,7 +44,8 @@ function User({selectedUser}) {
         console.log(response);
         setUser(response.data.user);
         setUsername(response.data.user.username);
-        setMessages(response.data.user.messages); // Fetch initial messages
+        setMessages(response.data.user.messages);
+        console.log(username); // Fetch initial messages
       } catch (error) {
         console.error("Error fetching user data:", error);
       }
@@ -119,6 +120,6 @@ function User({selectedUser}) {
   );
 }
 User.propTypes = {
-  selectedUser: PropTypes.number.isRequired, // Define the expected type for selectedUser
+  selectedUser: PropTypes.object, // Define the expected type for selectedUser
 };
 export default User;
