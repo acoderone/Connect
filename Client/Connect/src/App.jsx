@@ -27,12 +27,12 @@ function App() {
 
   return (
     <authContext.Provider value={{isAuthenticated,setAuthenticated}}>
-      <div className=' flex flex-col h-full  '>
+      <div className=' flex flex-col fixed h-full  '>
     <Navbar />
      <Routes>
       <Route className='h-screen' path='/login' element={<Login />}/>
       <Route path='/signup' element={<Signup />}/>
-      <Route path='/dashboard' element={<Dashboard />}/>
+      <Route  path='/dashboard' element={<Dashboard />}/>
       <Route path='/:userId' element={<User />}/>
       <Route path='/' element={<HomePage />}/>
       <Route path='/room' element={<Room />}/>
