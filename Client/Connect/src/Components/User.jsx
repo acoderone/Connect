@@ -3,14 +3,14 @@ import { io } from "socket.io-client";
 import axios from "axios";
 import { useNavigate, useParams } from "react-router-dom";
 import {jwtDecode} from "jwt-decode";
-
+import PropTypes from 'prop-types';
 const socket = io("http://localhost:3000", {
   withCredentials: true,
   transports: ['websocket'], // Ensure WebSocket transport is used
   autoConnect: true,
 });
 
-function User() {
+function User({selectedUser}) {
   const navigate=useNavigate();
   const [user, setUser] = useState(null);
   const { userId } = useParams();
@@ -36,7 +36,7 @@ function User() {
     const fetchData = async () => {
       try {
         const response = await axios.get(
-          `http://localhost:3000/users/${userId}`,
+          `http://localhost:3000/users/${selectedUser._id}`,
           {
             withCredentials: true,
           }
@@ -52,7 +52,7 @@ function User() {
 
     const fetchMessages = async () => {
       const response2 = await axios.get(
-        `http://localhost:3000/messages/${userId}`,
+        `http://localhost:3000/messages/${selectedUser._id}`,
         { withCredentials: true }
       );
       console.log(response2);
@@ -71,7 +71,7 @@ function User() {
       socket.off("msg");
       socket.disconnect(); // Clean up the socket connection
     };
-  }, [userId]);
+  }, [navigate, selectedUser._id, userId]);
 
   useEffect(() => {
     if (sender) {
@@ -118,5 +118,7 @@ function User() {
     </div>
   );
 }
-
+User.propTypes = {
+  selectedUser: PropTypes.number.isRequired, // Define the expected type for selectedUser
+};
 export default User;

@@ -35,13 +35,13 @@ exports.getMessages = async (req, res) => {
 };
 
 exports.createRoom = async (req, res) => {
-  const { roomId } = req.body;
+  const { roomId,passkey } = req.body;
   const getRoomId = await room.findOne({ roomId: roomId });
   if (getRoomId) {
     console.error("Id not available");
   } else {
     try {
-      const Room = new room({ roomId });
+      const Room = new room({ roomId,passkey });
       await Room.save();
       res.status(200).send("Room created succesfully");
     } catch (e) {
@@ -63,9 +63,9 @@ exports.getRoom = async (req, res) => {
 };
 
 exports.enterRoom = async (req, res) => {
-  const { roomId } = req.body;
+  const { roomId,passkey } = req.body;
  // console.log("RoomId id", roomId);
-  const current_room =await room.findOne({ roomId: roomId });
+  const current_room =await room.findOne({ roomId: roomId,passkey:passkey });
   if (current_room) {
     console.log("room available");
     res.status(200).json({ message: "Entered in the room" });

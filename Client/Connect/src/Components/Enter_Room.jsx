@@ -4,11 +4,12 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 function Enter_Room() {
     const [roomId,setRoomId]=useState('');
+    const [passKey,setPasskey]=useState('');
     const navigate=useNavigate();
     
- const handleRoom=async(roomId)=>{
+ const handleRoom=async()=>{
   const response=await axios.post("http://localhost:3000/messages/enterRoom",{
-    roomId
+    roomId,passKey
   },{
     withCredentials:true
   })
@@ -28,7 +29,8 @@ function Enter_Room() {
   return (
     <div>
       <input onChange={(e)=>setRoomId(e.target.value)}/>
-      <button onClick={()=>handleRoom(roomId)}>Enter</button>
+      <input type='password' onChange={(e)=>setPasskey(e.target.value)}/>
+      <button onClick={()=>handleRoom()}>Enter</button>
     </div>
   )
 }
