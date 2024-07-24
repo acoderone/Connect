@@ -35,9 +35,8 @@ function App() {
      <Routes>
       <Route className='h-screen' path='/login' element={<Login />}/>
       <Route path='/signup' element={<Signup />}/>
-      <Route path='/dashboard' element={<Dashboard />}/>
+      <Route path='/' element={<Dashboard />}/>
       <Route path='/:userId' element={<User />}/>
-      <Route path='/' element={<HomePage />}/>
       <Route path='/room' element={<Room />}/>
       <Route path='/room/:roomId' element={<Room_messaging />}/>
       <Route path='/enterRoom' element={<Enter_Room />}/>

@@ -8,7 +8,6 @@ const cookieParser = require("cookie-parser");
 const { timeStamp } = require("console");
 const PORT = 3000;
 const server = http.createServer(app);
-const users = {};
 const User=require("./models/user");
 const Message=require("./models/message");
 const Room_message=require("./models/room_message");
@@ -49,15 +48,16 @@ mongoose
   });
 
 io.on("connection", (socket) => {
-  console.log("A user connected: " + socket.id);
+  //console.log("A user connected: " + socket.id);
 
   socket.on("register", async (username) => {
+    console.log("A user connected: " + socket.id);
     try {
       console.log("username", username);
       const user = await User.findOne({ username });
       if (user) {
         console.log("Hii");
-        users[username] = socket.id;
+       await User.findOneAndUpdate({username},{socketid:socket.id},{new:true});
       }
     } catch (error) {
       console.error("Error registering user:", error);
@@ -66,11 +66,11 @@ io.on("connection", (socket) => {
 
   socket.on("message", async (messageData) => {
     try {
-      let receiver = users[messageData.to];
-      let sender = users[messageData.from];
-      console.log("receiver", receiver, users);
+      let receiver = await User.findOne({username:messageData.to});
+      let sender = await User.findOne({username:messageData.from});
+      console.log("receiver", receiver.socketid, sender.socketid);
       if (receiver && sender) {
-        io.to(receiver).emit("msg", messageData);
+        io.to(receiver.socketid).emit("msg", messageData);
 
         const newMessage = new Message(messageData);
         await newMessage.save();
@@ -87,12 +87,7 @@ io.on("connection", (socket) => {
       }
       socket.on('disconnect', () => {
         console.log('A user disconnected: ' + socket.id);
-        for (const [username, socketId] of Object.entries(users)) {
-          if (username === username) {
-            delete users[username];
-            break;
-          }
-        }
+      
       });
     } catch (error) {
       console.error("Error sending message:", error);

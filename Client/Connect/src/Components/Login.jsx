@@ -31,7 +31,7 @@ function Login() {
         localStorage.setItem("token", token);
       }
 
-      navigate("/dashboard");
+      navigate("/");
     }
   };
   return (

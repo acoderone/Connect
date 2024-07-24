@@ -9,6 +9,7 @@ function Dashboard() {
   const [selectedUser, setSelectedUser] = useState();
   const [loading,setLoading]=useState(true);
   const fetchUser = (user) => {
+    console.log(user);
     setSelectedUser(user);
   };
 

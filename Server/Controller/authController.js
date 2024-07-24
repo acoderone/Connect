@@ -7,12 +7,13 @@ const saltRounds = 10;
 exports.signup = async (req, res) => {
   const { username, password, email, name } = req.body;
   try {
+    const socketId="000";
     const user = await User.findOne({ username });
     if (user) {
       res.status(403).json({ message: "Username already present" });
     } else {
       const hashedPassword = await bcrypt.hash(password, saltRounds);
-      const newUser = new User({ username, hashedPassword, email, name });
+      const newUser = new User({ username, hashedPassword, email, name,socketId });
       await newUser.save();
       res.cookie("user", username, { httpOnly: true, maxAge: 86400000 });
       res.json({ message: "User Created successfully" });

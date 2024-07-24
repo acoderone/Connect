@@ -1,15 +1,13 @@
 import { useEffect, useState } from "react";
-import { io } from "socket.io-client";
 import axios from "axios";
 import { useNavigate, useParams } from "react-router-dom";
-import {jwtDecode} from "jwt-decode"; // Correct import
+import { jwtDecode } from "jwt-decode"; // Correct import
 import PropTypes from "prop-types";
-
-const socket = io("http://localhost:3000", {
-  withCredentials: true,
-  transports: ["websocket"], // Ensure WebSocket transport is used
-  autoConnect: true,
-});
+import {
+  socket,
+  connectSocket,
+  disconnectSocket,
+} from "../Socket/socketService";
 
 function User({ selectedUser }) {
   const navigate = useNavigate();
@@ -22,8 +20,6 @@ function User({ selectedUser }) {
   const [loading, setLoading] = useState(true); // Add loading state
 
   useEffect(() => {
-    socket.connect(); // Connect the socket
-
     const token = localStorage.getItem("token");
     if (!token) {
       navigate("/login");
@@ -43,7 +39,7 @@ function User({ selectedUser }) {
         );
         console.log(response);
         setUser(response.data.user);
-        setUsername(response.data.user.username);
+        setUsername(selectedUser.username);
         console.log(username); // Fetch initial messages
       } catch (error) {
         console.error("Error fetching user data:", error);
@@ -65,18 +61,17 @@ function User({ selectedUser }) {
       }
     };
 
-    fetchData().then(fetchMessages);
-
     socket.on("msg", (messageData) => {
       console.log("New message received:", messageData);
       setMessages((prevMessages) => [...prevMessages, messageData]);
     });
-
+    fetchData();
+    fetchMessages();
     return () => {
       socket.off("msg");
-      socket.disconnect(); // Clean up the socket connection
+      // Clean up the socket connection
     };
-  }, [navigate, selectedUser._id, userId, username]);
+  }, [navigate, selectedUser, userId, username]);
 
   useEffect(() => {
     if (sender) {
@@ -84,11 +79,18 @@ function User({ selectedUser }) {
     }
   }, [sender]);
 
+  useEffect(() => {
+    connectSocket();
+
+    return () => {
+      disconnectSocket();
+    };
+  }, []);
   const sendMessage = () => {
     if (message && username) {
       const messageData = {
         from: sender,
-        to: username,
+        to: selectedUser.username,
         message: message,
       };
       console.log(messageData.from, messageData.to, messageData.message);
@@ -112,10 +114,25 @@ function User({ selectedUser }) {
 
       <div className="flex rounded-md bg-slate-400 flex-col h-full overflow-y-auto gap-2 px-2 py-3">
         {loading ? (
-          <button type="button" className="bg-indigo-500 text-white font-bold py-2 px-4 rounded disabled:opacity-50" disabled>
-            <svg className="animate-spin h-5 w-5 mr-3" viewBox="0 0 24 24">
-              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v2a6 6 0 00-6 6H4zm8-8a8 8 0 018 8h-2a6 6 0 00-6-6V4z"></path>
+          <button
+            type="button"
+            className="bg-indigo-500 text-white font-bold py-2 px-2 rounded disabled:opacity-50"
+            disabled
+          >
+            <svg className="animate-spin h-5 w-3 mr-3" viewBox="0 0 24 24">
+              <circle
+                className="opacity-25"
+                cx="12"
+                cy="12"
+                r="10"
+                stroke="currentColor"
+                strokeWidth="4"
+              ></circle>
+              <path
+                className="opacity-75"
+                fill="currentColor"
+                d="M4 12a8 8 0 018-8v2a6 6 0 00-6 6H4zm8-8a8 8 0 018 8h-2a6 6 0 00-6-6V4z"
+              ></path>
             </svg>
             Processing...
           </button>

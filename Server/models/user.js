@@ -6,6 +6,7 @@ const userSchema = new mongoose.Schema({
   email: String,
   name: String,
   messages: [{ type: mongoose.Schema.Types.ObjectId, ref: "Message" }],
+  socketid:{type:String,default:null},
 });
 
 module.exports = mongoose.model("User", userSchema);
