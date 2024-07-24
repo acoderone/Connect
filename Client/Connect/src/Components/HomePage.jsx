@@ -2,7 +2,7 @@ import React from 'react'
 
 function HomePage() {
   return (
-    <div>
+    <div className='flex justify-center h-screen items-center'>
       Chat APP
       <a href='/dashboard'>Chat App</a>
     </div>

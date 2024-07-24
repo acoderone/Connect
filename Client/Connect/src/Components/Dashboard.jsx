@@ -7,6 +7,7 @@ function Dashboard() {
   const navigate = useNavigate();
   const [users, setUsers] = useState([]);
   const [selectedUser, setSelectedUser] = useState();
+  const [loading,setLoading]=useState(true);
   const fetchUser = (user) => {
     setSelectedUser(user);
   };
@@ -37,6 +38,7 @@ function Dashboard() {
           (u) => u.username !== decodedToken.username
         );
         setUsers(filteredUsers);
+        setLoading(false);
       } catch (e) {
         console.error("Error fetching users:", e);
         navigate("/login");
@@ -56,7 +58,15 @@ function Dashboard() {
           />
         </div>
 
-        {users.length > 0 ? (
+        {loading?
+        (<button type="button" className="bg-indigo-500 text-white font-bold py-2 px-4 rounded disabled:opacity-50" disabled>
+            <svg className="animate-spin h-5 w-5 mr-3" viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v2a6 6 0 00-6 6H4zm8-8a8 8 0 018 8h-2a6 6 0 00-6-6V4z"></path>
+            </svg>
+            Processing...
+          </button>)
+         :(users.length > 0 ? (
           users.map((user, index) => (
             <div className="flex justify-center" key={index}>
               <button onClick={() => fetchUser(user)}>{user.username}</button>
@@ -64,9 +74,9 @@ function Dashboard() {
           ))
         ) : (
           <div>No users found</div>
-        )}
+        ))}
       </div>
-      <div className="flex w-5/6 justify-center  ">
+      <div className="flex w-5/6 justify-center ">
         {selectedUser ? (
           <User selectedUser={selectedUser} />
         ) : (

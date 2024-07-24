@@ -2,8 +2,9 @@ import { useEffect, useState } from "react";
 import { io } from "socket.io-client";
 import axios from "axios";
 import { useNavigate, useParams } from "react-router-dom";
-import { jwtDecode } from "jwt-decode";
+import {jwtDecode} from "jwt-decode"; // Correct import
 import PropTypes from "prop-types";
+
 const socket = io("http://localhost:3000", {
   withCredentials: true,
   transports: ["websocket"], // Ensure WebSocket transport is used
@@ -18,6 +19,7 @@ function User({ selectedUser }) {
   const [message, setMessage] = useState("");
   const [username, setUsername] = useState("");
   const [sender, setSender] = useState("");
+  const [loading, setLoading] = useState(true); // Add loading state
 
   useEffect(() => {
     socket.connect(); // Connect the socket
@@ -42,7 +44,6 @@ function User({ selectedUser }) {
         console.log(response);
         setUser(response.data.user);
         setUsername(response.data.user.username);
-        setMessages(response.data.user.messages);
         console.log(username); // Fetch initial messages
       } catch (error) {
         console.error("Error fetching user data:", error);
@@ -50,16 +51,21 @@ function User({ selectedUser }) {
     };
 
     const fetchMessages = async () => {
-      const response2 = await axios.get(
-        `http://localhost:3000/messages/${selectedUser._id}`,
-        { withCredentials: true }
-      );
-      console.log(response2);
-      setMessages(response2.data.messages);
+      try {
+        const response2 = await axios.get(
+          `http://localhost:3000/messages/${selectedUser._id}`,
+          { withCredentials: true }
+        );
+        console.log(response2);
+        setMessages(response2.data.messages);
+      } catch (error) {
+        console.error("Error fetching messages:", error);
+      } finally {
+        setLoading(false); // Set loading to false after data is fetched
+      }
     };
 
-    fetchData();
-    fetchMessages();
+    fetchData().then(fetchMessages);
 
     socket.on("msg", (messageData) => {
       console.log("New message received:", messageData);
@@ -93,7 +99,7 @@ function User({ selectedUser }) {
   };
 
   return (
-    <div className="flex flex-col w-3/4 gap-3  ">
+    <div className="flex flex-col w-3/4 gap-3 p-3">
       <div>
         {user ? (
           <div>
@@ -104,31 +110,36 @@ function User({ selectedUser }) {
         )}
       </div>
 
-      <div className="flex rounded-md  bg-slate-400 flex-col h-3/4 overflow-y-auto gap-2 px-2 py-3">
-        {messages.map((msg, index) =>
-          msg.from == sender ? (
-            <div className="flex justify-end gap-2" key={index}>
-              <div className="flex rounded-tl-2xl rounded-tr-2xl rounded-bl-2xl p-2 bg-lime-400 w-1/3">
-                {msg.message}
-               
+      <div className="flex rounded-md bg-slate-400 flex-col h-full overflow-y-auto gap-2 px-2 py-3">
+        {loading ? (
+          <button type="button" className="bg-indigo-500 text-white font-bold py-2 px-4 rounded disabled:opacity-50" disabled>
+            <svg className="animate-spin h-5 w-5 mr-3" viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v2a6 6 0 00-6 6H4zm8-8a8 8 0 018 8h-2a6 6 0 00-6-6V4z"></path>
+            </svg>
+            Processing...
+          </button>
+        ) : (
+          messages.map((msg, index) =>
+            msg.from === sender ? (
+              <div className="flex justify-end gap-2" key={index}>
+                <div className="flex rounded-tl-2xl rounded-tr-2xl rounded-br-2xl p-2 bg-lime-400 w-1/3">
+                  {msg.message}
+                </div>
               </div>
-             
-            </div>
-          ) : (
-            <div className="" key={index}>
-              <div className="rounded-tl-2xl rounded-tr-2xl rounded-br-2xl p-2 bg-slate-200 w-1/3">
-                {msg.message}
+            ) : (
+              <div className="" key={index}>
+                <div className="rounded-tl-2xl rounded-tr-2xl rounded-bl-2xl p-2 bg-slate-200 w-1/3">
+                  {msg.message}
+                </div>
               </div>
-              
-            </div>
+            )
           )
-          
-        )
-        }
+        )}
       </div>
       <div className="flex gap-1 justify-center">
         <input
-          className="w-3/4 "
+          className="w-3/4"
           type="text"
           placeholder="Message"
           value={message}
@@ -139,7 +150,9 @@ function User({ selectedUser }) {
     </div>
   );
 }
+
 User.propTypes = {
   selectedUser: PropTypes.object, // Define the expected type for selectedUser
 };
+
 export default User;
