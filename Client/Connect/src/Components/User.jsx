@@ -1,7 +1,7 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import axios from "axios";
 import { useNavigate, useParams } from "react-router-dom";
-import { jwtDecode } from "jwt-decode"; // Correct import
+import { jwtDecode } from "jwt-decode";
 import PropTypes from "prop-types";
 import {
   socket,
@@ -17,8 +17,8 @@ function User({ selectedUser }) {
   const [message, setMessage] = useState("");
   const [username, setUsername] = useState("");
   const [sender, setSender] = useState("");
-  const [loading, setLoading] = useState(true); // Add loading state
-
+  const [loading, setLoading] = useState(true);
+  const MessageRef = useRef(null);
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (!token) {
@@ -40,7 +40,6 @@ function User({ selectedUser }) {
         console.log(response);
         setUser(response.data.user);
         setUsername(selectedUser.username);
-        console.log(username); // Fetch initial messages
       } catch (error) {
         console.error("Error fetching user data:", error);
       }
@@ -57,8 +56,9 @@ function User({ selectedUser }) {
       } catch (error) {
         console.error("Error fetching messages:", error);
       } finally {
-        setLoading(false); // Set loading to false after data is fetched
+        setLoading(false);
       }
+      scrollToBottom();
     };
 
     socket.on("msg", (messageData) => {
@@ -69,13 +69,12 @@ function User({ selectedUser }) {
     fetchMessages();
     return () => {
       socket.off("msg");
-      // Clean up the socket connection
     };
   }, [navigate, selectedUser, userId, username]);
 
   useEffect(() => {
     if (sender) {
-      socket.emit("register", sender); // Emit register event when sender is set
+      socket.emit("register", sender);
     }
   }, [sender]);
 
@@ -86,6 +85,9 @@ function User({ selectedUser }) {
       disconnectSocket();
     };
   }, []);
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
   const sendMessage = () => {
     if (message && username) {
       const messageData = {
@@ -93,15 +95,18 @@ function User({ selectedUser }) {
         to: selectedUser.username,
         message: message,
       };
-      console.log(messageData.from, messageData.to, messageData.message);
-      socket.emit("message", messageData); // Emit message event
+      socket.emit("message", messageData);
       setMessages((prevMessages) => [...prevMessages, messageData]);
       setMessage("");
     }
   };
-
+  const scrollToBottom = () => {
+    if (MessageRef.current) {
+      MessageRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  };
   return (
-    <div className="flex flex-col w-3/4 gap-3 p-3">
+    <div className="flex flex-col gap-3 h-full p-3">
       <div>
         {user ? (
           <div>
@@ -112,41 +117,20 @@ function User({ selectedUser }) {
         )}
       </div>
 
-      <div className="flex rounded-md bg-slate-400 flex-col h-full overflow-y-auto gap-2 px-2 py-3">
+      <div  className="flex rounded-md bg-slate-200 flex-col h-full flex-grow overflow-y-auto gap-2 px-2 py-3">
         {loading ? (
-          <button
-            type="button"
-            className="bg-indigo-500 text-white font-bold py-2 px-2 rounded disabled:opacity-50"
-            disabled
-          >
-            <svg className="animate-spin h-5 w-3 mr-3" viewBox="0 0 24 24">
-              <circle
-                className="opacity-25"
-                cx="12"
-                cy="12"
-                r="10"
-                stroke="currentColor"
-                strokeWidth="4"
-              ></circle>
-              <path
-                className="opacity-75"
-                fill="currentColor"
-                d="M4 12a8 8 0 018-8v2a6 6 0 00-6 6H4zm8-8a8 8 0 018 8h-2a6 6 0 00-6-6V4z"
-              ></path>
-            </svg>
-            Processing...
-          </button>
+          <h1>Processing...</h1>
         ) : (
           messages.map((msg, index) =>
             msg.from === sender ? (
-              <div className="flex justify-end gap-2" key={index}>
-                <div className="flex rounded-tl-2xl rounded-tr-2xl rounded-br-2xl p-2 bg-lime-400 w-1/3">
+              <div ref={MessageRef} className="flex justify-end gap-2" key={index}>
+                <div className="inline-block max-w-xs rounded-2xl p-2 bg-blue-400">
                   {msg.message}
                 </div>
               </div>
             ) : (
-              <div className="" key={index}>
-                <div className="rounded-tl-2xl rounded-tr-2xl rounded-bl-2xl p-2 bg-slate-200 w-1/3">
+              <div ref={MessageRef} className="justify-start gap-2" key={index}>
+                <div className="inline-block max-w-xs rounded-2xl p-2 bg-white ">
                   {msg.message}
                 </div>
               </div>
@@ -156,20 +140,25 @@ function User({ selectedUser }) {
       </div>
       <div className="flex gap-1 justify-center">
         <input
-          className="w-3/4"
           type="text"
           placeholder="Message"
           value={message}
           onChange={(e) => setMessage(e.target.value)}
+          className="flex-grow border rounded-full h-8 p-2 px-3 text-md border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue"
         />
-        <button onClick={sendMessage}>Send</button>
+        <button
+          onClick={sendMessage}
+          className="bg-blue-500 text-white rounded-full px-4"
+        >
+          Send
+        </button>
       </div>
     </div>
   );
 }
 
 User.propTypes = {
-  selectedUser: PropTypes.object, // Define the expected type for selectedUser
+  selectedUser: PropTypes.object,
 };
 
 export default User;

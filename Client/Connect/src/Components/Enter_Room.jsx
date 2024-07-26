@@ -27,7 +27,7 @@ function Enter_Room() {
   }
  }
   return (
-    <div className='flex justify-center h-screen items-center flex-col gap-2'>
+    <div className='flex justify-center  items-center flex-col gap-2'>
       <input placeholder='roomID' className='border rounded-sm h-8 p-2 border-blue-400 focus:outline-none focus:ring-2  focus:ring-blue' onChange={(e)=>setRoomId(e.target.value)}/>
       <input placeholder='password' className='border rounded-sm h-8 p-2 border-blue-400 focus:outline-none focus:ring-2  focus:ring-blue' type='password' onChange={(e)=>setPasskey(e.target.value)}/>
       <button className='border rounded-sm border-blue-400 hover:border-blue-700 w-16' onClick={()=>handleRoom()}>Enter</button>
