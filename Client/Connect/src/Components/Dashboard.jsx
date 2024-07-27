@@ -55,7 +55,7 @@ function Dashboard() {
     <div className="flex h-full">
       <div className="w-1/6 h-full bg-blue-500 p-2">
         <input
-          className="border rounded-full h-8 p-2 px-3 text-md border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue  mb-2"
+          className="border w-full rounded-full h-8 p-2 px-3 text-md border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue  mb-2"
           placeholder="Search"
         />
         {loading ? (

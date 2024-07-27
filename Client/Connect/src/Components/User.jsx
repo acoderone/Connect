@@ -117,13 +117,17 @@ function User({ selectedUser }) {
         )}
       </div>
 
-      <div  className="flex rounded-md bg-slate-200 flex-col h-full flex-grow overflow-y-auto gap-2 px-2 py-3">
+      <div className="flex rounded-md bg-slate-200 flex-col h-full flex-grow overflow-y-auto gap-2 px-2 py-3">
         {loading ? (
           <h1>Processing...</h1>
         ) : (
           messages.map((msg, index) =>
             msg.from === sender ? (
-              <div ref={MessageRef} className="flex justify-end gap-2" key={index}>
+              <div
+                ref={MessageRef}
+                className="flex justify-end gap-2"
+                key={index}
+              >
                 <div className="inline-block max-w-xs rounded-2xl p-2 bg-blue-400">
                   {msg.message}
                 </div>

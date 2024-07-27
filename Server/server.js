@@ -12,6 +12,7 @@ const User=require("./models/user");
 const Message=require("./models/message");
 const Room_message=require("./models/room_message");
 const Room=require("./models/room");
+
 require("dotenv").config();
 
 const authRoutes = require("./routes/authRoutes");
@@ -103,12 +104,12 @@ io.on("connection", (socket) => {
     console.log(`User ${socket.id} left room ${room}`);
 });
   socket.on('room_message', async ( messageData) => {
-    const{roomId,message}=messageData
+    const{from,roomId,message}=messageData
     try {
      const selected_room=await Room.findOne({roomId:roomId});
      if(selected_room){
       console.log(selected_room);
-      const current_message=new Room_message({roomId:roomId,message:message});
+      const current_message=new Room_message({from:from,roomId:roomId,message:message});
       await current_message.save();
       io.to(roomId).emit('recieve_message',messageData);
       console.log(current_message);
