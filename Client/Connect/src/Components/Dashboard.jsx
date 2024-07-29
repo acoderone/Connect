@@ -52,8 +52,8 @@ function Dashboard() {
   }, [navigate]);
 
   return (
-    <div className="flex h-full">
-      <div className="w-1/6 h-full bg-blue-500 p-2">
+    <div className="flex h-full w-full">
+      <div className="w-1/6 h-full  bg-blue-500 p-2">
         <input
           className="border w-full rounded-full h-8 p-2 px-3 text-md border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue  mb-2"
           placeholder="Search"
@@ -89,6 +89,7 @@ function Dashboard() {
                 onClick={() => fetchUser(user)}
               >
                 {user.username}
+                
               </button>
             </div>
           ))

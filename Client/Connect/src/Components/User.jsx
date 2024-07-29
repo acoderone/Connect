@@ -106,7 +106,7 @@ function User({ selectedUser }) {
     }
   };
   return (
-    <div className="flex flex-col gap-3 h-full p-3">
+    <div className="flex flex-col gap-3 h-full w-full p-3">
       <div>
         {user ? (
           <div>
@@ -117,7 +117,7 @@ function User({ selectedUser }) {
         )}
       </div>
 
-      <div className="flex rounded-md bg-slate-200 flex-col h-full flex-grow overflow-y-auto gap-2 px-2 py-3">
+      <div className="flex rounded-md bg-slate-200 flex-col w-full h-full flex-grow overflow-y-auto gap-2 px-2 py-3">
         {loading ? (
           <h1>Processing...</h1>
         ) : (
@@ -125,16 +125,16 @@ function User({ selectedUser }) {
             msg.from === sender ? (
               <div
                 ref={MessageRef}
-                className="flex justify-end gap-2"
+                className="flex justify-end break-words  text-wrap gap-2"
                 key={index}
               >
-                <div className="inline-block max-w-xs rounded-2xl p-2 bg-blue-400">
+                <div className="inline-block rounded-2xl p-2 bg-blue-400 break-words max-w-xs">
                   {msg.message}
                 </div>
               </div>
             ) : (
               <div ref={MessageRef} className="justify-start gap-2" key={index}>
-                <div className="inline-block max-w-xs rounded-2xl p-2 bg-white ">
+                <div className="inline-block rounded-2xl p-2 bg-white break-words max-w-xs ">
                   {msg.message}
                 </div>
               </div>

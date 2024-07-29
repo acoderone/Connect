@@ -9,15 +9,31 @@ import authContext from "./Context/AuthContext";
 import Room from "./Components/Room";
 import Room_messaging from "./Components/Room_messaging";
 import Enter_Room from "./Components/Enter_Room";
+import { jwtDecode } from "jwt-decode";
 import './index.css';
 
 function App() {
   const [isAuthenticated, setAuthenticated] = useState(false);
+  
+  const isTokenExpired = (token) => {
+    if (!token) return true;
 
+    try {
+      const { exp } = jwtDecode(token);
+      if (Date.now() >= exp * 1000) {
+        return true;
+      }
+    } catch (error) {
+      return true;
+    }
+
+    return false;
+  };
   useEffect(() => {
     // Check if the user is authenticated
     const checkAuth = async () => {
       const token = localStorage.getItem("token");
+      if(!isTokenExpired(token))
       setAuthenticated(token);
     };
 
@@ -26,7 +42,7 @@ function App() {
 
   return (
     <authContext.Provider value={{ isAuthenticated, setAuthenticated }}>
-      <div className="flex flex-col  h-screen">
+      <div className="flex flex-col  h-screen w-screen">
         <Navbar />
         <div className="flex-grow overflow-hidden">
           <Routes>
