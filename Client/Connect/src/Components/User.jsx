@@ -3,6 +3,8 @@ import axios from "axios";
 import { useNavigate, useParams } from "react-router-dom";
 import { jwtDecode } from "jwt-decode";
 import PropTypes from "prop-types";
+import useSound from 'use-Sound';
+import mySound from "../assets/happy-pop-2-185287.mp3"
 import {
   socket,
   connectSocket,
@@ -19,6 +21,7 @@ function User({ selectedUser }) {
   const [sender, setSender] = useState("");
   const [loading, setLoading] = useState(true);
   const MessageRef = useRef(null);
+  const[playsound]=useSound(mySound);
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (!token) {
@@ -98,6 +101,7 @@ function User({ selectedUser }) {
       socket.emit("message", messageData);
       setMessages((prevMessages) => [...prevMessages, messageData]);
       setMessage("");
+      playsound();
     }
   };
   const scrollToBottom = () => {

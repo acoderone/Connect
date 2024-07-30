@@ -1,9 +1,11 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
 import { io } from "socket.io-client";
 import { jwtDecode } from "jwt-decode";
 import { useRef } from "react";
+
+import mySound from "../assets/happy-pop-2-185287.mp3";
 const socket = io("http://localhost:3000", {
   withCredentials: true,
   transports: ["websocket"], // Ensure WebSocket transport is used
@@ -17,6 +19,7 @@ function Room() {
   const [messages, setMessages] = useState([]);
   const [sender, setSender] = useState("");
   const MessageRef = useRef(null);
+  const [playsound] = useSound(mySound);
   useEffect(() => {
     socket.connect();
     socket.emit("join room", roomId);
@@ -47,6 +50,7 @@ function Room() {
 
     // Listen for incoming messages
     socket.on("recieve_message", (messageData) => {
+      playsound();
       console.log("New message received:", messageData);
       setMessages((prevMessages) => [...prevMessages, messageData]);
     });
@@ -85,10 +89,9 @@ function Room() {
   };
   return (
     <div className="flex flex-col justify-center items-center  w-full h-full">
-    <h1 className="text-3xl font-bold p-1">{roomId}</h1>
+      <h1 className="text-3xl font-bold p-1">{roomId}</h1>
       <div className="flex justify-center items-center flex-col rounded-md bg-slate-200  w-11/12 h-5/6  ">
         <div className="flex flex-col items-center w-full h-11/12 flex-grow">
-          
           <div className="flex flex-col  w-2/3 p-3 gap-2">
             {messages.map((msg, index) =>
               msg.from === sender ? (
