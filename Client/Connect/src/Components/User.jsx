@@ -1,10 +1,10 @@
 import { useEffect, useRef, useState } from "react";
 import axios from "axios";
 import { useNavigate, useParams } from "react-router-dom";
-import { jwtDecode } from "jwt-decode";
+import {jwtDecode} from "jwt-decode";
 import PropTypes from "prop-types";
-import useSound from 'use-Sound';
-import mySound from "../assets/happy-pop-2-185287.mp3"
+//import {useSound} from "use-sound";
+//import {mySound} from "../assets/happy-pop-2-185287.mp3";
 import {
   socket,
   connectSocket,
@@ -21,7 +21,10 @@ function User({ selectedUser }) {
   const [sender, setSender] = useState("");
   const [loading, setLoading] = useState(true);
   const MessageRef = useRef(null);
-  const[playsound]=useSound(mySound);
+  const [userID, setUserID] = useState(null);
+  const [id, setId] = useState();
+  //const [playsound] = useSound(mySound);
+
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (!token) {
@@ -29,20 +32,19 @@ function User({ selectedUser }) {
       return;
     } else if (token) {
       const decodedToken = jwtDecode(token);
-      setSender(decodedToken.username);
+      setSender(decodedToken.user._id);
     }
-
+setUserID(userId);
     const fetchData = async () => {
       try {
         const response = await axios.get(
-          `http://localhost:3000/users/${selectedUser._id}`,
-          {
-            withCredentials: true,
-          }
+          `http://localhost:3000/users/${selectedUser}`,
+          { withCredentials: true }
         );
-        console.log(response);
+        setId(response.data.user._id);
+       
         setUser(response.data.user);
-        setUsername(selectedUser.username);
+        setUsername(response.data.user._id);
       } catch (error) {
         console.error("Error fetching user data:", error);
       }
@@ -51,10 +53,9 @@ function User({ selectedUser }) {
     const fetchMessages = async () => {
       try {
         const response2 = await axios.get(
-          `http://localhost:3000/messages/${selectedUser._id}`,
+          `http://localhost:3000/messages/${selectedUser}`,
           { withCredentials: true }
         );
-        console.log(response2);
         setMessages(response2.data.messages);
       } catch (error) {
         console.error("Error fetching messages:", error);
@@ -65,15 +66,20 @@ function User({ selectedUser }) {
     };
 
     socket.on("msg", (messageData) => {
-      console.log("New message received:", messageData);
-      setMessages((prevMessages) => [...prevMessages, messageData]);
+      console.log("to",messageData.to);
+      console.log("too",userID);
+      if (messageData.from === userID) {
+        setMessages((prevMessages) => [...prevMessages, messageData]);
+      }
     });
+
     fetchData();
     fetchMessages();
+
     return () => {
       socket.off("msg");
     };
-  }, [navigate, selectedUser, userId, username]);
+  }, [navigate, selectedUser, sender, username, userId, userID]);
 
   useEffect(() => {
     if (sender) {
@@ -88,33 +94,37 @@ function User({ selectedUser }) {
       disconnectSocket();
     };
   }, []);
+
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
+
   const sendMessage = () => {
     if (message && username) {
       const messageData = {
         from: sender,
-        to: selectedUser.username,
+        to: username,
         message: message,
       };
       socket.emit("message", messageData);
       setMessages((prevMessages) => [...prevMessages, messageData]);
       setMessage("");
-      playsound();
+     // playsound();
     }
   };
+
   const scrollToBottom = () => {
     if (MessageRef.current) {
       MessageRef.current.scrollIntoView({ behavior: "smooth" });
     }
   };
+
   return (
     <div className="flex flex-col gap-3 h-full w-full p-3">
       <div>
         {user ? (
           <div>
-            <h1>{username}</h1>
+            <h1>{user.username}</h1>
           </div>
         ) : (
           <p>Loading user data...</p>
@@ -129,7 +139,7 @@ function User({ selectedUser }) {
             msg.from === sender ? (
               <div
                 ref={MessageRef}
-                className="flex justify-end break-words  text-wrap gap-2"
+                className="flex justify-end break-words text-wrap gap-2"
                 key={index}
               >
                 <div className="inline-block rounded-2xl p-2 bg-blue-400 break-words max-w-xs">
@@ -138,7 +148,7 @@ function User({ selectedUser }) {
               </div>
             ) : (
               <div ref={MessageRef} className="justify-start gap-2" key={index}>
-                <div className="inline-block rounded-2xl p-2 bg-white break-words max-w-xs ">
+                <div className="inline-block rounded-2xl p-2 bg-white break-words max-w-xs">
                   {msg.message}
                 </div>
               </div>
@@ -146,6 +156,7 @@ function User({ selectedUser }) {
           )
         )}
       </div>
+
       <div className="flex gap-1 justify-center">
         <input
           type="text"
@@ -166,7 +177,7 @@ function User({ selectedUser }) {
 }
 
 User.propTypes = {
-  selectedUser: PropTypes.object,
+  selectedUser: PropTypes.string.isRequired,
 };
 
 export default User;

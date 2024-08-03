@@ -1,6 +1,5 @@
 import { Routes, Route } from "react-router-dom";
 import Login from "./Components/Login";
-import Dashboard from "./Components/Dashboard";
 import User from "./Components/User";
 import Signup from "./Components/Signup";
 import Navbar from "./Components/Navbar";
@@ -11,6 +10,8 @@ import Room_messaging from "./Components/Room_messaging";
 import Enter_Room from "./Components/Enter_Room";
 import { jwtDecode } from "jwt-decode";
 import './index.css';
+import Messaging from "./Components/Messaging";
+import Dashboard from "./Components/Dashboard";
 
 function App() {
   const [isAuthenticated, setAuthenticated] = useState(false);
@@ -48,8 +49,8 @@ function App() {
           <Routes>
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
+            <Route path="/:userId" element={<Messaging />} />
             <Route path="/" element={<Dashboard />} />
-            <Route path="/:userId" element={<User />} />
             <Route path="/room" element={<Room />} />
             <Route path="/room/:roomId" element={<Room_messaging />} />
             <Route path="/enterRoom" element={<Enter_Room />} />

@@ -7,12 +7,13 @@ import "../index.css";
 function Dashboard() {
   const navigate = useNavigate();
   const [users, setUsers] = useState([]);
-  const [selectedUser, setSelectedUser] = useState(null);
+ 
   const [loading, setLoading] = useState(true);
 
   const fetchUser = (user) => {
-    console.log(user);
-    setSelectedUser(user);
+   // console.log(user);
+    
+    navigate(`/${user._id}`)
   };
 
   useEffect(() => {
@@ -53,7 +54,7 @@ function Dashboard() {
 
   return (
     <div className="flex h-full w-full">
-      <div className="w-1/6 h-full  bg-blue-500 p-2">
+      <div className=" h-full  bg-blue-500 p-2">
         <input
           className="border w-full rounded-full h-8 p-2 px-3 text-md border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue  mb-2"
           placeholder="Search"
@@ -97,15 +98,7 @@ function Dashboard() {
           <div>No users found</div>
         )}
       </div>
-      <div className="flex-grow w-3/6 h-full">
-        {selectedUser ? (
-          <User selectedUser={selectedUser} />
-        ) : (
-          <div className="flex items-center justify-center h-full">
-            Please select a user
-          </div>
-        )}
-      </div>
+     
     </div>
   );
 }

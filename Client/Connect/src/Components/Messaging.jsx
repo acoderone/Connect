@@ -1,21 +1,22 @@
-import Dashboard from './Dashboard'
-import User from './User';
-
+import Dashboard from "./Dashboard";
+import User from "./User";
+import { useParams } from "react-router-dom";
 function Messaging() {
-    
-   
+  const {userId}=useParams();
+ 
   return (
-    <div>
-      <Dashboard />
-      <div className="flex overflow-y-auto  justify-center ">
-        {selectedUser ? (
-          <User selectedUser={selectedUser} />
-        ) : (
-          <>Please select the user</>
-        )}
-      </div>
+    <div className="flex h-full w-full">
+    <div className="flex h-full w-1/6">
+    <Dashboard />
     </div>
-  )
+     
+       <div className="flex w-full justify-center items-center">
+        
+          <User selectedUser={userId} />
+        
+      </div> 
+    </div>
+  );
 }
 
-export default Messaging
+export default Messaging;

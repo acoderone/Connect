@@ -20,10 +20,10 @@ exports.getMessages = async (req, res) => {
     const messages = await Message.find({
       $or: [
         {
-          $and: [{ to: user.username }, { from: req.user.username }],
+          $or: [{ to: user._id }, { from: req.user._id }],
         },
         {
-          $and: [{ to: req.user.username }, { from: user.username }],
+          $or: [{ to: req.user._id}, { from: user._id }],
         },
       ],
     }).sort({ timeStamp: 1 });

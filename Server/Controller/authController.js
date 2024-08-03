@@ -30,7 +30,7 @@ exports.login = async (req, res) => {
     const user = await User.findOne({ username: username });
     const match = await bcrypt.compare(password, user.hashedPassword);
     if (match) {
-      const token = jwt.sign({ username }, secretKey, { expiresIn: "1h" });
+      const token = jwt.sign({ username,user}, secretKey, { expiresIn: "1h" });
       res.cookie("token", token, { httpOnly: true, maxAge: 86400000 });
       res.status(200).json({ message: "Logged in successfully", token,authenticated:true });
     } else {

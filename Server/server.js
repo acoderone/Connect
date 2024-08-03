@@ -51,14 +51,14 @@ mongoose
 io.on("connection", (socket) => {
   //console.log("A user connected: " + socket.id);
 
-  socket.on("register", async (username) => {
+  socket.on("register", async (_id) => {
     console.log("A user connected: " + socket.id);
     try {
-      console.log("username", username);
-      const user = await User.findOne({ username });
+      console.log("username", _id);
+      const user = await User.findOne({ _id });
       if (user) {
         console.log("Hii");
-       await User.findOneAndUpdate({username},{socketid:socket.id},{new:true});
+       await User.findOneAndUpdate({_id},{socketid:socket.id},{new:true});
       }
     } catch (error) {
       console.error("Error registering user:", error);
@@ -67,8 +67,8 @@ io.on("connection", (socket) => {
 
   socket.on("message", async (messageData) => {
     try {
-      let receiver = await User.findOne({username:messageData.to});
-      let sender = await User.findOne({username:messageData.from});
+      let receiver = await User.findOne({_id:messageData.to});
+      let sender = await User.findOne({_id:messageData.from});
       console.log("receiver", receiver.socketid, sender.socketid);
       if (receiver && sender) {
         io.to(receiver.socketid).emit("msg", messageData);
@@ -76,8 +76,8 @@ io.on("connection", (socket) => {
         const newMessage = new Message(messageData);
         await newMessage.save();
 
-        const senderUser = await User.findOne({ username: messageData.from });
-        const recipientUser = await User.findOne({ username: messageData.to });
+        const senderUser = await User.findOne({ _id: messageData.from });
+        const recipientUser = await User.findOne({ _id: messageData.to });
 
         if (senderUser && recipientUser) {
           senderUser.messages.push(newMessage);
