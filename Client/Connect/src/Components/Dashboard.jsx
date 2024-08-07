@@ -2,9 +2,11 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import {jwtDecode} from "jwt-decode";
-import User from "./User";
+
 import "../index.css";
-function Dashboard() {
+// eslint-disable-next-line react/prop-types
+function Dashboard({highlightedUser}) {
+  const [highlightedUsers,setHighlightedUsers]=useState(null);
   const navigate = useNavigate();
   const [users, setUsers] = useState([]);
  
@@ -12,11 +14,13 @@ function Dashboard() {
 
   const fetchUser = (user) => {
    // console.log(user);
-    
+   console.log(highlightedUsers)
+    setHighlightedUsers(null);
     navigate(`/${user._id}`)
   };
 
   useEffect(() => {
+    setHighlightedUsers(highlightedUser);
     const fetchUsers = async () => {
       const token = localStorage.getItem("token");
       if (!token) {
@@ -50,7 +54,7 @@ function Dashboard() {
     };
 
     fetchUsers();
-  }, [navigate]);
+  }, [highlightedUser, navigate]);
 
   return (
     <div className="flex h-full w-full">
@@ -85,8 +89,12 @@ function Dashboard() {
         ) : users.length > 0 ? (
           users.map((user, index) => (
             <div className="flex justify-center mb-2" key={index}>
-              <button
-                className="bg-white rounded-full py-2 px-4"
+             <button
+                className={`${
+                  highlightedUsers === user._id
+                    ? "bg-yellow-500"
+                    : "bg-white"
+                } rounded-full py-2 px-4`}
                 onClick={() => fetchUser(user)}
               >
                 {user.username}

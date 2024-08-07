@@ -3,15 +3,16 @@ import axios from "axios";
 import { useNavigate, useParams } from "react-router-dom";
 import {jwtDecode} from "jwt-decode";
 import PropTypes from "prop-types";
-//import {useSound} from "use-sound";
-//import {mySound} from "../assets/happy-pop-2-185287.mp3";
+import useSound from "use-sound";
+import mySound from "../assets/happy-pop-2-185287.mp3";
 import {
   socket,
   connectSocket,
   disconnectSocket,
 } from "../Socket/socketService";
 
-function User({ selectedUser }) {
+// eslint-disable-next-line react/prop-types
+function User({ selectedUser,setHighlighted }) {
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
   const { userId } = useParams();
@@ -23,7 +24,8 @@ function User({ selectedUser }) {
   const MessageRef = useRef(null);
   const [userID, setUserID] = useState(null);
   const [id, setId] = useState();
-  //const [playsound] = useSound(mySound);
+ 
+  const [playsound] = useSound(mySound);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -66,9 +68,9 @@ setUserID(userId);
     };
 
     socket.on("msg", (messageData) => {
-      console.log("to",messageData.to);
-      console.log("too",userID);
+      playsound();
       if (messageData.from === userID) {
+       setHighlighted(messageData.from);
         setMessages((prevMessages) => [...prevMessages, messageData]);
       }
     });

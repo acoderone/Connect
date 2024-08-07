@@ -4,7 +4,7 @@ import axios from "axios";
 import { io } from "socket.io-client";
 import { jwtDecode } from "jwt-decode";
 import { useRef } from "react";
-
+import useSound from "use-sound";
 import mySound from "../assets/happy-pop-2-185287.mp3";
 const socket = io("http://localhost:3000", {
   withCredentials: true,
@@ -19,6 +19,7 @@ function Room() {
   const [messages, setMessages] = useState([]);
   const [sender, setSender] = useState("");
   const MessageRef = useRef(null);
+  
   const [playsound] = useSound(mySound);
   useEffect(() => {
     socket.connect();
@@ -59,7 +60,7 @@ function Room() {
       socket.off("recieve_message");
       socket.disconnect(); // Clean up the socket connection
     };
-  }, [navigate, roomId]);
+  }, [navigate, playsound, roomId]);
 
   const handleLeaveRoom = () => {
     if (roomId != "") {
