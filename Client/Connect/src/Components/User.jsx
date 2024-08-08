@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import axios from "axios";
 import { useNavigate, useParams } from "react-router-dom";
-import {jwtDecode} from "jwt-decode";
+import { jwtDecode } from "jwt-decode";
 import PropTypes from "prop-types";
 import useSound from "use-sound";
 import mySound from "../assets/happy-pop-2-185287.mp3";
@@ -12,7 +12,7 @@ import {
 } from "../Socket/socketService";
 
 // eslint-disable-next-line react/prop-types
-function User({ selectedUser,setHighlighted }) {
+function User({ selectedUser, setHighlighted }) {
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
   const { userId } = useParams();
@@ -24,7 +24,7 @@ function User({ selectedUser,setHighlighted }) {
   const MessageRef = useRef(null);
   const [userID, setUserID] = useState(null);
   const [id, setId] = useState();
- 
+
   const [playsound] = useSound(mySound);
 
   useEffect(() => {
@@ -36,7 +36,7 @@ function User({ selectedUser,setHighlighted }) {
       const decodedToken = jwtDecode(token);
       setSender(decodedToken.user._id);
     }
-setUserID(userId);
+    setUserID(userId);
     const fetchData = async () => {
       try {
         const response = await axios.get(
@@ -44,7 +44,7 @@ setUserID(userId);
           { withCredentials: true }
         );
         setId(response.data.user._id);
-       
+
         setUser(response.data.user);
         setUsername(response.data.user._id);
       } catch (error) {
@@ -70,7 +70,7 @@ setUserID(userId);
     socket.on("msg", (messageData) => {
       playsound();
       if (messageData.from === userID) {
-       setHighlighted(messageData.from);
+        setHighlighted(messageData.from);
         setMessages((prevMessages) => [...prevMessages, messageData]);
       }
     });
@@ -111,7 +111,7 @@ setUserID(userId);
       socket.emit("message", messageData);
       setMessages((prevMessages) => [...prevMessages, messageData]);
       setMessage("");
-     // playsound();
+      // playsound();
     }
   };
 
@@ -137,25 +137,35 @@ setUserID(userId);
         {loading ? (
           <h1>Processing...</h1>
         ) : (
-          messages.map((msg, index) =>
-            msg.from === sender ? (
-              <div
-                ref={MessageRef}
-                className="flex justify-end break-words text-wrap gap-2"
-                key={index}
-              >
-                <div className="inline-block rounded-2xl p-2 bg-blue-400 break-words max-w-xs">
-                  {msg.message}
+          messages.map((msg, index) => {
+            if (msg.from === sender && msg.to === username) {
+              return (
+                <div
+                  ref={MessageRef}
+                  className="flex justify-end break-words text-wrap gap-2"
+                  key={index}
+                >
+                  <div className="inline-block rounded-2xl p-2 bg-blue-400 break-words max-w-xs">
+                    {msg.message}
+                  </div>
                 </div>
-              </div>
-            ) : (
-              <div ref={MessageRef} className="justify-start gap-2" key={index}>
-                <div className="inline-block rounded-2xl p-2 bg-white break-words max-w-xs">
-                  {msg.message}
+              );
+            } else if (msg.from === username && msg.to === sender) {
+              return (
+                <div
+                  ref={MessageRef}
+                  className="justify-start gap-2"
+                  key={index}
+                >
+                  <div className="inline-block rounded-2xl p-2 bg-white break-words max-w-xs">
+                    {msg.message}
+                  </div>
                 </div>
-              </div>
-            )
-          )
+              );
+            } else {
+              return null; // In case there are other messages that do not match the conditions
+            }
+          })
         )}
       </div>
 
